@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Taras in Arnhem</title>
+<title>Taras in Arnhem</title><meta property="og:title" content="Taras in Arnhem"><meta property="og:description" content="Словник нідерландської A1–A2"><meta property="og:type" content="website">
 <style>
 :root{--c:#ff6a00;--bg:#f4f6fb;--b:#21468b}
 *{box-sizing:border-box}
@@ -42,7 +42,7 @@ footer a{color:var(--b);font-weight:700}
 <div id="vmsg">Нідерландський голос не знайдено на цьому пристрої. Додайте голос nl-NL у налаштуваннях мови пристрою.</div>
 <div id="tools">
   <div class="r"><input id="q" type="search" placeholder="Пошук слова або перекладу…" autocomplete="off">
-  <select id="rate" aria-label="Швидкість озвучування"><option value="0.5">🐢 0.5</option><option value="0.65" selected>🔊 0.65</option><option value="1.0">⚡ 1.0</option></select></div>
+  <select id="rate" aria-label="Швидкість озвучування"><option value="0.4">🐌 Дуже повільно (0.4)</option><option value="0.5" selected>🐢 Повільно (0.5)</option><option value="0.85">⚡ Нормально (0.85)</option></select></div>
   <div id="chips"></div>
 </div>
 <main><div id="list"></div><div id="empty">Нічого не знайдено</div></main>
@@ -73,7 +73,7 @@ var total=0;THEMES.forEach(function(t){total+=t[2].length});
 document.querySelector('header p').textContent='Словник нідерландської A1–A2 · '+total+' слів з озвучуванням';
 
 var rateSel=document.getElementById('rate');
-try{var sr=localStorage.getItem('rate');if(sr)rateSel.value=sr;rateSel.onchange=function(){localStorage.setItem('rate',rateSel.value)}}catch(e){}
+try{var sr=localStorage.getItem('rate2');if(sr)rateSel.value=sr;rateSel.onchange=function(){localStorage.setItem('rate2',rateSel.value)}}catch(e){}
 var voices=[];
 function loadVoices(){if('speechSynthesis' in window)voices=speechSynthesis.getVoices()||[]}
 function dutchVoice(){
@@ -89,7 +89,7 @@ function speak(text,btn){
   document.getElementById('vmsg').style.display=voice?'none':'block';
   speechSynthesis.cancel();
   var u=new SpeechSynthesisUtterance(text);
-  u.lang='nl-NL';u.rate=parseFloat(rateSel.value)||0.65;
+  u.lang='nl-NL';u.rate=parseFloat(rateSel.value)||0.5;
   if(voice)u.voice=voice;
   [].forEach.call(document.querySelectorAll('.spk.on'),function(x){x.classList.remove('on')});
   btn.classList.add('on');
@@ -117,7 +117,7 @@ function render(){
     html+='<h2>'+t[1]+' '+esc(t[0])+' <small>('+items.length+')</small></h2>';
     items.forEach(function(s){
       var p=s.split('|');
-      html+='<div class="w"><div class="t"><div class="nl">'+esc(p[0])+'</div><div class="uk">'+esc(p[1])+'</div></div><button type="button" class="spk" data-t="'+esc(p[0])+'" aria-label="Прослухати" title="Прослухати">🔊</button></div>';
+      html+='<div class="w"><div class="t"><div class="nl">'+esc(p[0])+'</div><div class="uk">'+esc(p[1])+'</div></div><button type="button" class="spk" data-t="'+esc(p[0])+'" aria-label="Прослухати" title="Прослухати">🔊</button><button type="button" class="spk" data-t="'+esc(p[0])+'" aria-label="Повторити" title="Повторити">🔁</button></div>';
     });
   });
   list.innerHTML=html;

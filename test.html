@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taras in Arnhem</title>
+<style>
+:root{--c:#ff6a00;--bg:#f4f6fb;--ok:#1b9a4b;--bad:#d33}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#1b2330;line-height:1.45}
+header{background:#21468b;color:#fff;padding:16px;text-align:center}
+header h1{margin:0;font-size:1.3rem}
+header p{margin:4px 0 0;opacity:.9;font-size:.9rem}
+#bar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #dde;padding:8px 12px;display:flex;gap:10px;align-items:center;font-size:.9rem}
+#prog{flex:1;height:8px;background:#e3e7f0;border-radius:4px;overflow:hidden}
+#prog i{display:block;height:100%;width:0;background:var(--c);transition:width .2s}
+main{max-width:800px;margin:0 auto;padding:12px}
+h2.sec{margin:26px 0 8px;color:#21468b;border-bottom:3px solid var(--c);padding-bottom:4px;font-size:1.15rem}
+.card{background:#fff;border-radius:12px;padding:14px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card.miss{outline:2px solid var(--bad)}
+.meta{font-size:.78rem;color:#667;margin-bottom:6px}
+.lvl{display:inline-block;background:#e8eefc;color:#21468b;border-radius:10px;padding:0 8px;margin-left:6px}
+.txt{background:#fff8ec;border-left:4px solid var(--c);padding:8px 10px;margin:6px 0 10px;border-radius:4px}
+.txt small,.uk{color:#5a6577;display:block;font-size:.9em}
+.q{font-weight:600;font-size:1.05rem}
+.row{display:flex;gap:8px;align-items:stretch;margin:7px 0}
+.row label.opt{flex:1;margin:0}
+.spk{flex:none;width:48px;border:2px solid #dde2ee;background:#fff;border-radius:10px;font-size:1.3rem;cursor:pointer}
+.spk:hover,.spk.on{border-color:var(--c);background:#fff4ea}
+#vmsg{display:none;background:#fff3cd;color:#664d03;padding:8px 12px;font-size:.85rem;text-align:center}
+label.opt{display:flex;gap:10px;align-items:flex-start;padding:10px;margin:7px 0;border:2px solid #dde2ee;border-radius:10px;cursor:pointer}
+label.opt:hover{border-color:#9fb3e6}
+label.opt input{margin-top:4px;width:20px;height:20px;flex:none;accent-color:var(--c)}
+label.opt.sel{border-color:var(--c);background:#fff4ea}
+label.opt.right{border-color:var(--ok);background:#e7f7ee}
+label.opt.wrong{border-color:var(--bad);background:#fdeaea}
+.l{font-weight:700;margin-right:2px}
+.clr{background:none;border:0;color:#21468b;text-decoration:underline;cursor:pointer;font-size:.8rem;padding:2px 0}
+.expl{margin-top:8px;padding:8px 10px;background:#eef3ff;border-radius:8px;font-size:.92rem}
+button.main{display:block;width:100%;max-width:420px;margin:24px auto;padding:16px;font-size:1.1rem;font-weight:700;border:0;border-radius:12px;background:var(--c);color:#fff;cursor:pointer}
+button.sec2{background:#21468b}
+#res{display:none}
+.score{text-align:center;background:#fff;border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.score .big{font-size:2.4rem;font-weight:800;color:var(--c)}
+.tbl{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
+.tbl td,.tbl th{padding:5px;border-bottom:1px solid #eee;text-align:left}
+@media(max-width:480px){.q{font-size:1rem}}
+</style>
+</head>
+<body>
+<header><h1 style="text-transform:uppercase;font-size:1.9rem;letter-spacing:1px">🇳🇱 Taras in Arnhem</h1><p>Тест з нідерландської A1–A2 · 100 запитань · Grammatica, Woordenschat, Lezen, Zinsbouw</p></header>
+<div style="text-align:center;padding:8px;background:#fff"><a href="./" style="color:#21468b;font-weight:700">← Словник</a></div><div id="vmsg">Нідерландський голос не знайдено на цьому пристрої. Додайте голос nl-NL у налаштуваннях мови пристрою — озвучування може звучати з іншим акцентом.</div>
+<div id="bar"><span id="cnt">0 / 100</span><div id="prog"><i></i></div><label style="white-space:nowrap">🔊 <select id="rate"><option value="0.5">Повільно (0.5)</option><option value="0.65" selected>Чітко (0.65)</option><option value="1.0">Нормально (1.0)</option></select></label></div>
+<main>
+<div id="quiz"></div>
+<button class="main" id="finish">Завершити тест</button>
+<div id="res"></div>
+</main>
+<script>
+// Формат: [рівень, питання NL, питання UK, [варіанти "NL|UK"], індекс правильного, пояснення, (текст NL|UK)]
+var T1="Hallo, ik heet Anna. Ik ben 25 jaar oud. Ik kom uit Oekraïne, maar ik woon nu in Utrecht. Ik werk in een café. Ik hou van koffie en muziek.|Привіт, мене звати Анна. Мені 25 років. Я родом з України, але зараз живу в Утрехті. Я працюю в кафе. Я люблю каву та музику.";
+var T2="Mijn familie is klein. Ik heb een vader, een moeder en een zus. Mijn zus heet Lisa. Zij is acht jaar. Wij hebben een hond. De hond heet Max. Op zaterdag gaan wij naar het park.|Моя родина маленька. У мене є тато, мама і сестра. Мою сестру звати Ліза. Їй вісім років. У нас є собака. Собаку звати Макс. У суботу ми йдемо в парк.";
+var T3="Beste Tom, volgende week zaterdag geef ik een feestje voor mijn verjaardag. Het begint om 8 uur 's avonds bij mij thuis. Ik woon aan de Kerkstraat 12. Kom je ook? Je mag een vriend meenemen. Ik zorg voor eten en drinken. Groeten, Sara|Дорогий Томе, наступної суботи я влаштовую вечірку на свій день народження. Вона починається о 8 вечора в мене вдома. Я живу на Керкстраат, 12. Ти прийдеш? Можеш взяти з собою друга. Я подбаю про їжу та напої. Вітання, Сара";
+var T4="Gisteren was het slecht weer in Nederland. Het regende de hele dag en het was koud, maar vandaag schijnt de zon. De temperatuur is 18 graden. Morgen wordt het weer warm, ongeveer 22 graden. Het weekend wordt waarschijnlijk droog.|Вчора в Нідерландах була погана погода. Цілий день йшов дощ і було холодно, але сьогодні світить сонце. Температура — 18 градусів. Завтра знову потепліє, приблизно до 22 градусів. На вихідні, ймовірно, буде сухо.";
+var T5="Jan werkt als monteur. Hij begint om 8 uur en eindigt om 5 uur. 's Ochtends gaat hij met de fiets naar zijn werk, want zijn auto is kapot. In de pauze eet hij een broodje met kaas. Na het werk gaat hij soms naar de sportschool. Dan komt hij pas om 8 uur thuis.|Ян працює механіком. Він починає о 8 і закінчує о 5. Зранку він їде на роботу велосипедом, бо його машина зламана. У перерву він їсть булочку із сиром. Після роботи він іноді йде в спортзал. Тоді він приходить додому лише о 8.";
+var SECTIONS = [
+{name:"Grammatica (граматика)", q:[
+["A1","Ik ___ een student.","Я ___ студент.",["ben|є (я)","bent|є (ти)","is|є (він/вона)","zijn|є (ми/вони)"],0,"Дієслово zijn (бути): ik ben, jij bent, hij/zij is, wij/jullie/zij zijn. Після «ik» завжди ben."],
+["A1","Jij ___ heel aardig.","Ти дуже добрий.",["ben|є (я)","is|є (він)","bent|є (ти)","zijn|є (ми)"],2,"Після «jij» (ти) використовуємо bent: jij bent."],
+["A1","Wij ___ in Nederland.","Ми в Нідерландах.",["is|є (він)","zijn|є (ми)","ben|є (я)","bent|є (ти)"],1,"Для wij/jullie/zij (множина) форма — zijn."],
+["A1","Hij ___ een fiets.","Він має велосипед.",["heb|маю","hebben|маємо","heeft|має","hebt|маєш"],2,"Дієслово hebben (мати): ik heb, jij hebt, hij/zij heeft, wij hebben. Для «hij» — heeft."],
+["A1","Ik ___ twee broers.","Я маю двох братів.",["heeft|має","hebben|маємо","heb|маю","hebt|маєш"],2,"Після «ik» форма hebben — heb (без -t)."],
+["A1","Welk lidwoord past? ___ tafel","Який означений артикль підходить? ___ стіл",["het|het","de|de","een|неозначений артикль","geen|жодний"],1,"Слово tafel — «de-woord». Більшість іменників мають de; решта — het (het huis, het boek). Артикль вчіть разом зі словом."],
+["A1","Wat is het meervoud van «boek»?","Яка форма множини від «boek» (книга)?",["boeken|книги","boekken|—","boeks|—","boekes|—"],0,"Найчастіше множину утворюємо додаванням -en: boek → boeken."],
+["A1","Ik ___ koffie.","Я п'ю каву.",["drinkt|п'є","drink|п'ю","drinken|п'ємо","gedronken|випитий"],1,"З «ik» дієслово — це основа без закінчення: ik drink. З hij/zij — drinkt, з wij — drinken."],
+["A1","Zij ___ naar school.","Вона йде до школи.",["gaat|іде","ga|іду","gaan|ідемо","gaas|—"],0,"Gaan (іти): ik ga, jij gaat, hij/zij gaat, wij gaan. Для «zij» (вона) — gaat."],
+["A1","Ik heb ___ auto.","У мене немає машини.",["niet|не","geen|жодної / немає","nee|ні","niets|нічого"],1,"Перед іменником із «een» або без артикля заперечення — geen (ik heb geen auto). Niet заперечує дієслово чи прикметник."],
+["A1","Dit is ___ boek. (моя книга)","Це ___ книга. (моя)",["mijn|мій","jouw|твій","zijn|його","haar|її"],0,"Присвійні займенники: mijn (мій), jouw/je (твій), zijn (його), haar (її)."],
+["A1","Ik woon ___ Utrecht.","Я живу в Утрехті.",["in|в","op|на","aan|до/біля","bij|біля"],0,"З містами й країнами для місця вживаємо in: in Utrecht, in Nederland."],
+["A1","___ heet jij?","Як тебе звати?",["Wat|що","Wie|хто","Hoe|як","Waar|де"],2,"«Hoe heet je?» — стале питання «Як тебе звати?». Hoe = як."],
+["A1","Wij ___ in een winkel.","Ми працюємо в магазині.",["werkt|працює","werk|працюю","werken|працюємо","werkte|працював"],2,"Для множини (wij, jullie, zij) дієслово має закінчення -en: werken."],
+["A1","Hij komt ___ Spanje.","Він родом з Іспанії.",["uit|з","in|в","op|на","naar|до"],0,"Звідки родом — komen uit: Ik kom uit Oekraïne. Naar — напрямок руху."],
+["A2","Gisteren ___ ik naar de markt.","Вчора я ходив на ринок.",["ga|іду","ging|ішов","gegaan|ходив (дієприкметник)","gaat|іде"],1,"Минулий простий час (imperfectum) від gaan — ging. Це неправильне дієслово, його форму треба вивчити."],
+["A2","Ik heb gisteren een brief ___.","Вчора я написав листа.",["schreef|писав","schrijft|пише","geschreven|написаний","schrijven|писати"],2,"Перфект: hebben + дієприкметник (voltooid deelwoord) у кінці. schrijven → geschreven (неправильне)."],
+["A2","Wat is het voltooid deelwoord van «werken»?","Яка форма дієприкметника від «werken»?",["gewerkt|працював","geworkt|—","werkt|працює","gewerk|—"],0,"Правильні дієслова: ge- + основа + -t/-d. werken → ge-werk-t."],
+["A2","Ik ben naar huis ___.","Я пішов додому.",["gegaan|пішов","gegaat|—","gaan|іти","ging|ішов"],0,"Дієслова руху в перфекті беруть zijn: ik ben gegaan."],
+["A2","Mijn broer is ___ dan ik.","Мій брат вищий/більший за мене.",["groot|великий","groter|більший","grootst|найбільший","het grootst|найбільший"],1,"Вищий ступінь: прикметник + -er (groot → groter) і слово dan (ніж)."],
+["A2","Dit is de ___ stad van Nederland.","Це найгарніше місто Нідерландів.",["mooi|гарний","mooier|гарніший","mooiste|найгарніше","meer mooi|—"],2,"Найвищий ступінь перед іменником: прикметник + -ste (de mooiste stad)."],
+["A2","Het is een ___ huis.","Це великий будинок.",["grote|великий","groot|великий","groten|—","grootte|—"],1,"Het-слово з «een»: до прикметника -e НЕ додаємо (een groot huis). З de-словом: een grote tafel."],
+["A2","Hij ___ niet komen, want hij is ziek.","Він не може прийти, бо хворий.",["kunnen|могти (мн.)","kunt|можеш","kan|може","gekund|міг"],2,"Модальне дієслово kunnen: ik kan, jij kunt, hij kan, wij kunnen. Для «hij» — kan."],
+["A2","Ik was ___ elke ochtend.","Я вмиваюся щоранку.",["me|себе (я)","hem|його","zich|себе","je|тебе"],0,"Зворотні дієслова мають займенник: ik was me, jij wast je, hij wast zich."],
+["A2","Ik ___ elke dag om 7 uur op. (opstaan)","Я встаю щодня о 7. (opstaan)",["sta|встаю","staat|встає","opsta|—","staan|встаємо"],0,"Віддільні дієслова: префікс іде в кінець речення — ik sta om 7 uur op. Після «ik» — sta."],
+["A2","___ is een boek op tafel.","На столі є книга.",["Het|воно","Er|там (є)","De|—","Een|—"],1,"Конструкція «er is/zijn» = є/існує: Er is een boek op tafel."],
+["A2","Ik wacht ___ de bus.","Я чекаю на автобус.",["op|на","aan|до","voor|перед","bij|біля"],0,"Дієслово wachten вимагає прийменника op: wachten op iets/iemand."],
+["A2","Ik ___ morgen een film kijken.","Завтра я буду дивитися фільм.",["ga|іду","gaat|іде","ging|ішов","gegaan|ходив"],0,"Майбутнє: gaan + інфінітив у кінці. Ik ga … kijken. З «ik» — ga."],
+["A2","Wat is het verkleinwoord van «huis»?","Яка зменшувальна форма від «huis»?",["huisje|будиночок","huisken|—","huisetje|—","huisjes|—"],0,"Зменшувальні утворюємо додаванням -je (-tje, -etje). huis → huisje. Всі зменшувальні — het-слова."],
+["A2","Ik heb geen tijd ___ koffie te drinken.","У мене немає часу пити каву.",["om|щоб","voor|для","aan|до","door|через"],0,"Конструкція «om … te + інфінітив» = щоб/для того, щоб: om koffie te drinken."]
+]},
+{name:"Woordenschat (словниковий запас)", q:[
+["A1","Hoe zeg je «Доброго ранку» in het Nederlands?","Як сказати «Доброго ранку» нідерландською?",["Goedemorgen|—","Goedenavond|—","Goedenacht|—","Tot ziens|—"],0,"Goedemorgen = доброго ранку. Goedemiddag — добрий день, goedenavond — добрий вечір, goedenacht — на добраніч."],
+["A1","Hoe zeg je «Дякую» in het Nederlands?","Як сказати «Дякую» нідерландською?",["Alsjeblieft|—","Sorry|—","Bedankt|—","Hallo|—"],2,"Bedankt = дякую. Alsjeblieft — будь ласка."],
+["A1","Wat is «яблуко» in het Nederlands?","Як по-нідерландськи «яблуко»?",["peer|груша","appel|яблуко","brood|хліб","kaas|сир"],1,"Яблуко — de appel. Peer — груша, brood — хліб, kaas — сир."],
+["A1","Wat is «молоко» in het Nederlands?","Як по-нідерландськи «молоко»?",["water|—","thee|—","sap|—","melk|—"],3,"De melk = молоко. Water — вода, thee — чай, sap — сік."],
+["A1","Welk woord is het getal 7?","Яке слово означає число 7?",["vijf|—","zes|—","zeven|—","acht|—"],2,"Zeven = 7. Vijf — 5, zes — 6, acht — 8."],
+["A1","Na maandag komt ___.","Після понеділка йде ___.",["woensdag|середа","dinsdag|вівторок","zondag|неділя","vrijdag|п'ятниця"],1,"Дні тижня: maandag, dinsdag, woensdag, donderdag, vrijdag, zaterdag, zondag."],
+["A1","Gras is ___.","Трава — ___.",["rood|червона","blauw|синя","geel|жовта","groen|зелена"],3,"Groen = зелений. Rood — червоний, blauw — синій, geel — жовтий."],
+["A1","De zus van mijn moeder is mijn ___.","Сестра моєї мами — моя ___.",["oom|дядько","tante|тітка","opa|дідусь","neef|двоюрідний брат"],1,"Tante = тітка. Oom — дядько, opa — дідусь, neef — двоюрідний брат/племінник."],
+["A1","Hoe zeg je 2:30 in het Nederlands?","Як по-нідерландськи сказати 2:30?",["half vier|—","half drie|—","drie uur|—","twee uur|—"],1,"У нідерландській «half drie» = пів на третю, тобто 2:30 (а не 3:30)."],
+["A1","Het tegenovergestelde van «groot» is ___.","Протилежне до «groot» — ___.",["lang|довгий","klein|малий","oud|старий","duur|дорогий"],1,"Groot ↔ klein (великий ↔ малий)."],
+["A1","Waar koop je brood? Bij de ___.","Де купують хліб? У ___.",["slager|м'ясник","apotheker|аптекар","bakker|пекар","kapper|перукар"],2,"Brood koop je bij de bakker. Slager — м'ясник, apotheker — аптекар, kapper — перукар."],
+["A1","Het regent. Je neemt een ___ mee.","Іде дощ. Ти береш ___.",["zonnebril|сонячні окуляри","zwembroek|плавки","paraplu|парасольку","ventilator|вентилятор"],2,"Paraplu = парасолька. Zonnebril — сонцезахисні окуляри."],
+["A1","Wat is «сніданок» in het Nederlands?","Як по-нідерландськи «сніданок»?",["de lunch|—","het ontbijt|—","het avondeten|—","het tussendoortje|—"],1,"Het ontbijt = сніданок, de lunch = обід, het avondeten = вечеря."],
+["A2","Welk werkwoord betekent «забути»?","Яке дієслово означає «забути»?",["onthouden|—","vergeten|—","vinden|—","verliezen|—"],1,"Vergeten = забувати/забути: Ik ben mijn sleutels vergeten."],
+["A2","Welk woord betekent «затишний, приємний»?","Яке слово означає «затишний, приємний»?",["gezellig|—","duur|—","luid|—","gevaarlijk|—"],0,"Gezellig — улюблене слово голландців: затишно, привітно, приємна атмосфера."],
+["A2","Ik heb honger. Ik wil iets ___.","Я голодний. Я хочу щось ___.",["drinken|пити","slapen|спати","lezen|читати","eten|їсти"],3,"Honger hebben = бути голодним, тому хочемо eten (їсти). Dorst — спрага."],
+["A2","Ik heb hoofdpijn. Ik ga naar de ___.","У мене болить голова. Я іду до ___.",["bakker|пекаря","huisarts|сімейного лікаря","bank|банку","bioscoop|кінотеатру"],1,"De huisarts = сімейний лікар. У Нідерландах це перший крок при проблемах зі здоров'ям."],
+["A2","Welk woord betekent «домовленість, запис на зустріч»?","Яке слово означає «домовленість, запис на зустріч»?",["het cadeau|—","het kaartje|—","de afspraak|—","de vakantie|—"],2,"De afspraak = домовленість, запис (до лікаря) або зустріч: Ik heb een afspraak om 10 uur."],
+["A2","Wie helpt zieke mensen in het ziekenhuis?","Хто допомагає хворим у лікарні?",["de bakker|пекар","de verpleegkundige|медсестра/медбрат","de kapper|перукар","de timmerman|тесля"],1,"De verpleegkundige = медична сестра/брат."],
+["A2","Op het station wacht je op de ___.","На вокзалі ти чекаєш на ___.",["trein|потяг","vliegtuig|літак","schip|корабель","auto|авто"],0,"Station = вокзал, де чекають на trein (потяг)."],
+["A2","Het tegenovergestelde van «goedkoop» is ___.","Протилежне до «goedkoop» — ___.",["mooi|гарний","duur|дорогий","oud|старий","snel|швидкий"],1,"Goedkoop (дешевий) ↔ duur (дорогий)."],
+["A2","Welk woord betekent «день народження»?","Яке слово означає «день народження»?",["de verjaardag|—","de bruiloft|—","de vakantie|—","het feest|—"],0,"De verjaardag = день народження. Gefeliciteerd! = Вітаю!"],
+["A2","Welk woord betekent «сусіди»?","Яке слово означає «сусіди»?",["de collega's|—","de familie|—","de buren|—","de vrienden|—"],2,"De buren = сусіди; de buurman/buurvrouw — сусід/сусідка."],
+["A2","Hoe zeg je «Хочу пити» in het Nederlands?","Як по-нідерландськи сказати «Хочу пити»?",["Ik heb honger.|—","Ik heb dorst.|—","Ik ben moe.|—","Ik heb het koud.|—"],1,"Dorst = спрага. Ik heb dorst = мені хочеться пити."],
+["A2","Hoe zeg je «наступного тижня» in het Nederlands?","Як по-нідерландськи сказати «наступного тижня»?",["vorige week|—","deze week|—","volgende week|—","elke dag|—"],2,"Volgende = наступний, vorige = минулий: volgende week, vorige week."]
+]},
+{name:"Lezen (розуміння тексту)", q:[
+["A1","Hoe oud is Anna?","Скільки років Анні?",["25|25","52|52","15|15","35|35"],0,"У тексті: «Ik ben 25 jaar oud».",T1],
+["A1","Waar woont Anna nu?","Де зараз живе Анна?",["in Oekraïne|в Україні","in Amsterdam|в Амстердамі","in Rotterdam|в Роттердамі","in Utrecht|в Утрехті"],3,"«ik woon nu in Utrecht». Oekraïne — її батьківщина.",T1],
+["A1","Waar werkt Anna?","Де працює Анна?",["in een school|у школі","in een café|в кафе","in een ziekenhuis|у лікарні","in een winkel|у магазині"],1,"«Ik werk in een café».",T1],
+["A1","Waar houdt Anna van?","Що любить Анна?",["thee en sport|чай і спорт","films en boeken|фільми і книги","fietsen en koken|велосипед і готування","koffie en muziek|каву і музику"],3,"«Ik hou van koffie en muziek». Houden van = любити.",T1],
+["A1","Hoeveel zussen heeft de schrijver?","Скільки сестер має автор?",["één|одну","twee|дві","geen|жодної","drie|три"],0,"«Ik heb … een zus». Een zus = одна сестра.",T2],
+["A1","Hoe oud is Lisa?","Скільки років Лізі?",["18|18","5|5","8|8","80|80"],2,"«Zij is acht jaar» = їй 8 років.",T2],
+["A1","Hoe heet de hond?","Як звати собаку?",["Lisa|Ліза","Bram|Брам","Max|Макс","Tom|Том"],2,"«De hond heet Max».",T2],
+["A1","Wanneer gaan ze naar het park?","Коли вони йдуть у парк?",["op zondag|у неділю","op zaterdag|у суботу","op maandag|у понеділок","elke avond|щовечора"],1,"«Op zaterdag gaan wij naar het park». Zaterdag = субота.",T2],
+["A2","Waarom geeft Sara een feestje?","Чому Сара влаштовує вечірку?",["nieuwe baan|нова робота","verjaardag|день народження","verhuizing|переїзд","afscheid|прощання"],1,"«een feestje voor mijn verjaardag» — вечірка на її день народження.",T3],
+["A2","Hoe laat begint het feestje?","О котрій починається вечірка?",["18:00|18:00","22:00|22:00","08:00|08:00 ранку","20:00|20:00"],3,"«8 uur 's avonds» = 8 вечора = 20:00.",T3],
+["A2","Wat zegt Sara over eten en drinken?","Що Сара каже про їжу та напої?",["Tom neemt het mee|Том приносить їх","Er is geen eten|Їжі не буде","Sara zorgt ervoor|Сара подбає про це","Iedereen koopt zelf|Кожен купує сам"],2,"«Ik zorg voor eten en drinken» = я подбаю про їжу й напої. Zorgen voor = подбати про.",T3],
+["A2","Mag Tom iemand meenemen?","Чи може Том взяти когось із собою?",["Nee|Ні","Alleen zijn broer|Тільки брата","Ja, een vriend|Так, друга","Alleen zijn ouders|Тільки батьків"],2,"«Je mag een vriend meenemen» — можна взяти друга. Mogen = мати дозвіл.",T3],
+["A2","Hoe was het weer gisteren?","Яка була погода вчора?",["zonnig|сонячно","regenachtig en koud|дощово і холодно","heel heet|дуже спекотно","sneeuw|сніг"],1,"«Het regende de hele dag en het was koud».",T4],
+["A2","Hoe is het weer vandaag?","Яка погода сьогодні?",["regen|дощ","mist|туман","storm|буря","zonnig|сонячно"],3,"«vandaag schijnt de zon» = сьогодні світить сонце.",T4],
+["A2","Hoeveel graden wordt het morgen?","Скільки градусів буде завтра?",["12|12","22|22","18|18","28|28"],1,"«Morgen … ongeveer 22 graden». 18 — це сьогодні.",T4],
+["A2","Hoe wordt het weekend?","Яким буде вікенд?",["nat|мокрим","koud met sneeuw|холодним зі снігом","waarschijnlijk droog|ймовірно сухим","heel winderig|дуже вітряним"],2,"«Het weekend wordt waarschijnlijk droog». Waarschijnlijk = ймовірно, droog = сухий.",T4],
+["A2","Hoe gaat Jan naar zijn werk?","Як Ян добирається на роботу?",["met de auto|на машині","met de bus|автобусом","te voet|пішки","met de fiets|на велосипеді"],3,"«gaat hij met de fiets naar zijn werk».",T5],
+["A2","Waarom gaat Jan met de fiets?","Чому Ян їде велосипедом?",["Zijn auto is kapot|Його машина зламана","Hij woont dichtbij|Він живе поруч","Het is goedkoper|Це дешевше","De bus staat stil|Автобус стоїть"],0,"«want zijn auto is kapot». Want = бо; kapot = зламаний.",T5],
+["A2","Wat eet Jan in de pauze?","Що Ян їсть у перерву?",["soep|суп","een broodje met kaas|булочку із сиром","salade|салат","pizza|піцу"],1,"«In de pauze eet hij een broodje met kaas».",T5],
+["A2","Hoe laat is Jan thuis na de sportschool?","О котрій Ян вдома після спортзалу?",["17:00|17:00","18:00|18:00","22:00|22:00","20:00|20:00"],3,"«Dan komt hij pas om 8 uur thuis» — лише о 8 вечора = 20:00.",T5]
+]},
+{name:"Zinsbouw (порядок слів)", q:[
+["A1","Welke zin is correct?","Яке речення правильне?",["Ik woon in Amsterdam.|Я живу в Амстердамі.","Ik in Amsterdam woon.|—","Woon ik Amsterdam in.|—","In Amsterdam ik woon.|—"],0,"У простому реченні дієслово стоїть на ДРУГОМУ місці: Ik (1) woon (2) in Amsterdam."],
+["A1","Kies de juiste zin: «Вона п'є каву».","Оберіть правильне речення: «Вона п'є каву».",["Zij koffie drinkt.|—","Zij drinkt koffie.|Вона п'є каву.","Koffie zij drinkt.|—","Drinkt zij koffie.|Чи п'є вона каву?"],1,"Підмет + дієслово (2-ге місце) + решта: Zij drinkt koffie."],
+["A1","Kies de juiste vraag: «Ти говориш нідерландською?»","Оберіть правильне питання: «Ти говориш нідерландською?»",["Je Nederlands spreek?|—","Nederlands je spreek?|—","Spreek je Nederlands?|Ти говориш нідерландською?","Spreekt Nederlands je?|—"],2,"У питанні без питального слова дієслово ставимо НА ПОЧАТОК: Spreek je Nederlands?"],
+["A1","Kies de juiste vraag: «Де ти живеш?»","Оберіть правильне питання: «Де ти живеш?»",["Waar je woon?|—","Je woon waar?|—","Woon waar je?|—","Waar woon je?|Де ти живеш?"],3,"Питальне слово + дієслово + підмет: Waar (1) woon (2) je?"],
+["A1","Kies de juiste zin: «Я не люблю чай».","Оберіть правильне речення: «Я не люблю чай».",["Ik hou niet van thee.|Я не люблю чай.","Ik niet hou van thee.|—","Ik hou van niet thee.|—","Niet ik hou van thee.|—"],0,"Niet ставимо після дієслова та підмета: Ik hou niet van thee."],
+["A1","Kies de juiste zin: «Сьогодні я працюю».","Оберіть правильне речення: «Сьогодні я працюю».",["Vandaag ik werk.|—","Ik vandaag werk.|—","Vandaag werk ik.|Сьогодні я працюю.","Werk vandaag ik.|—"],2,"Якщо речення починається з часу (vandaag), дієслово залишається на 2-му місці, а підмет іде ПІСЛЯ нього (інверсія): Vandaag werk ik."],
+["A1","Kies de juiste zin: «Ми їмо хліб».","Оберіть правильне речення: «Ми їмо хліб».",["Wij brood eten.|—","Eten brood wij.|—","Wij eten brood.|Ми їмо хліб.","Brood wij eten.|—"],2,"Підмет + дієслово + додаток: Wij eten brood."],
+["A1","Kies de juiste zin: «Це моя книга».","Оберіть правильне речення: «Це моя книга».",["Dit mijn boek is.|—","Dit is mijn boek.|Це моя книга.","Mijn boek dit is.|—","Is dit mijn boek.|Чи це моя книга?"],1,"Dit (1) is (2) mijn boek. Порядок «підмет — дієслово — решта»."],
+["A1","Kies de juiste vraag: «Чи є в тебе брат?»","Оберіть правильне питання: «Чи є в тебе брат?»",["Jij een broer hebt?|—","Een broer heb jij?|—","Hebt een broer jij?|—","Heb jij een broer?|Чи є в тебе брат?"],3,"Питання «так/ні»: дієслово на початку. Heb jij een broer? (Коли jij стоїть після дієслова, -t не потрібне.)"],
+["A1","Kies de juiste vraag: «О котрій ти встаєш?»","Оберіть правильне питання: «О котрій ти встаєш?»",["Hoe laat je sta op?|—","Hoe laat sta je op?|О котрій ти встаєш?","Hoe laat sta op je?|—","Hoe laat opstaat je?|—"],1,"Hoe laat + дієслово + підмет; віддільний префікс op іде в кінець."],
+["A1","Kies de juiste zin: «Мене звати Пітер».","Оберіть правильне речення: «Мене звати Пітер».",["Peter ik heet.|—","Heet ik Peter.|—","Ik Peter heet.|—","Ik heet Peter.|Мене звати Пітер."],3,"Підмет + дієслово + решта: Ik heet Peter."],
+["A1","Kies de juiste zin: «Він не працює».","Оберіть правильне речення: «Він не працює».",["Hij werkt niet.|Він не працює.","Hij niet werkt.|—","Niet hij werkt.|—","Werkt niet hij.|—"],0,"Niet стоїть після дієслова й підмета: Hij werkt niet."],
+["A2","Kies de juiste vraag: «Чи піду я завтра в кіно?»","Оберіть правильне питання: «Чи піду я завтра в кіно?»",["Morgen ik ga naar de bioscoop.|—","Ik morgen ga naar de bioscoop.|—","Ga ik morgen naar de bioscoop?|Чи піду я завтра в кіно?","Naar de bioscoop morgen ik ga?|—"],2,"У питанні «так/ні» дієслово стоїть першим: Ga ik morgen naar de bioscoop?"],
+["A2","Kies de juiste zin: «Я не прийду, бо я хворий».","Оберіть правильне речення: «Я не прийду, бо я хворий».",["Ik kom niet, omdat ik ben ziek.|—","Ik kom niet, omdat ziek ik ben.|—","Ik kom niet omdat ben ik ziek.|—","Ik kom niet, omdat ik ziek ben.|Я не прийду, бо хворий."],3,"Після підрядного сполучника (omdat, dat, als) особове дієслово йде В КІНЕЦЬ підрядного речення: omdat ik ziek ben."],
+["A2","Kies de juiste zin: «Я думаю, що він удома».","Оберіть правильне речення: «Я думаю, що він удома».",["Ik denk dat hij is thuis.|—","Ik denk dat hij thuis is.|Я думаю, що він удома.","Ik denk dat is hij thuis.|—","Ik denk hij dat thuis is.|—"],1,"Після dat дієслово в кінці: dat hij thuis is."],
+["A2","Kies de juiste zin: «Вчора я купив хліб».","Оберіть правильне речення: «Вчора я купив хліб».",["Ik heb gisteren brood gekocht.|Вчора я купив хліб.","Ik heb gekocht gisteren brood.|—","Ik gisteren heb brood gekocht.|—","Heb ik gisteren gekocht brood.|—"],0,"Перфект: допоміжне дієслово на 2-му місці, дієприкметник (gekocht) — наприкінці: Ik heb gisteren brood gekocht."],
+["A2","Kies de juiste zin: «Я хочу піти додому».","Оберіть правильне речення: «Я хочу піти додому».",["Ik wil gaan naar huis.|—","Ik naar huis wil gaan.|—","Ik wil naar huis gaan.|Я хочу піти додому.","Ik ga willen naar huis.|—"],2,"Модальне дієслово (wil) на 2-му місці, інфінітив (gaan) — в кінці: Ik wil naar huis gaan."],
+["A2","Kies de juiste zin: «Ми прибираємо кімнату» (opruimen).","Оберіть правильне речення: «Ми прибираємо кімнату» (opruimen).",["Wij opruimen de kamer.|—","Wij ruimen op de kamer.|—","Wij de kamer opruimen.|—","Wij ruimen de kamer op.|Ми прибираємо кімнату."],3,"Віддільне дієслово opruimen: основна частина на 2-му місці (ruimen), префікс op — в кінець."],
+["A2","Kies de juiste zin: «Коли йде дощ, я лишаюся вдома».","Оберіть правильне речення: «Коли йде дощ, я лишаюся вдома».",["Als het regent, blijf ik thuis.|Коли йде дощ, я лишаюся вдома.","Als het regent, ik blijf thuis.|—","Als regent het, blijf ik thuis.|—","Als het regent blijf thuis ik.|—"],0,"Підрядне речення з als: дієслово в кінці (regent). Далі головне речення починається з дієслова (інверсія): blijf ik thuis."],
+["A2","Kies de juiste vraag: «Чи можеш ти мені допомогти?»","Оберіть правильне питання: «Чи можеш ти мені допомогти?»",["Je kun me helpen?|—","Kun helpen je me?|—","Helpen kun je me?|—","Kun je me helpen?|Чи можеш ти мені допомогти?"],3,"Модальне дієслово першим, підмет другим, інфінітив у кінці: Kun je me helpen?"],
+["A2","Kies de juiste zin: «Тому що йде дощ, ми залишаємося вдома».","Оберіть правильне речення: «Тому що йде дощ, ми залишаємося вдома».",["Omdat het regent, we blijven thuis.|—","Omdat het regent, blijven we thuis.|Тому що йде дощ, ми залишаємося вдома.","Omdat regent het, we blijven thuis.|—","Omdat het regent blijven thuis we.|—"],1,"Підрядне речення першим → у головному дієслово стоїть перед підметом: …, blijven we thuis."],
+["A2","Kies de juiste zin: «Ми його не бачили».","Оберіть правильне речення: «Ми його не бачили».",["Wij hebben gezien hem niet.|—","Wij hebben niet gezien hem.|—","Wij hebben hem niet gezien.|Ми його не бачили.","Wij niet hebben hem gezien.|—"],2,"Hebben на 2-му місці, займенник (hem) і niet перед дієприкметником, який стоїть у кінці: hem niet gezien."],
+["A2","Kies de juiste vraag: «Що ти робив учора?»","Оберіть правильне питання: «Що ти робив учора?»",["Wat je hebt gisteren gedaan?|—","Wat heb je gedaan gisteren?|—","Wat gedaan heb je gisteren?|—","Wat heb je gisteren gedaan?|Що ти робив учора?"],3,"Питальне слово + допоміжне дієслово + підмет + обставина часу + дієприкметник у кінці."],
+["A2","Kies de juiste zin: «Я знаю, що вона вміє добре співати».","Оберіть правильне речення: «Я знаю, що вона вміє добре співати».",["Ik weet dat zij kan goed zingen.|—","Ik weet dat zij goed kan zingen.|Я знаю, що вона вміє добре співати.","Ik weet dat kan zij goed zingen.|—","Ik weet zij dat goed kan zingen.|—"],1,"У підрядному реченні дієслова — в кінці: …dat zij goed kan zingen."],
+["A2","Kies de juiste zin: «Ми мусимо рано встати».","Оберіть правильне речення: «Ми мусимо рано встати».",["Wij opstaan moeten vroeg.|—","Wij moeten opstaan vroeg.|—","Moeten wij vroeg opstaan?|Чи мусимо ми рано встати?","Wij moeten vroeg opstaan.|Ми мусимо рано встати."],3,"Модальне дієслово на 2-му місці, інфінітив — в кінці: Wij moeten vroeg opstaan. Варіант «Moeten wij…?» — питання."]
+]}
+];
+
+var all=[], quiz=document.getElementById('quiz');
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+var rateSel=document.getElementById('rate');try{var sr=localStorage.getItem('rate');if(sr)rateSel.value=sr;rateSel.onchange=function(){localStorage.setItem('rate',rateSel.value)}}catch(e){}
+var voices=[];
+function loadVoices(){if('speechSynthesis' in window)voices=speechSynthesis.getVoices()||[]}
+function dutchVoice(){
+  var v=voices.filter(function(x){return /^nl[-_]NL$/i.test(x.lang)});
+  if(!v.length)v=voices.filter(function(x){return /^nl/i.test(x.lang)});
+  return v[0]||null;
+}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function speak(text,btn){
+  if(!('speechSynthesis' in window)){alert('Ваш браузер не підтримує озвучування.');return}
+  loadVoices();
+  var voice=dutchVoice();
+  document.getElementById('vmsg').style.display=voice?'none':'block';
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang='nl-NL';u.rate=parseFloat(document.getElementById('rate').value)||0.65;
+  if(voice)u.voice=voice;
+  [].forEach.call(document.querySelectorAll('.spk.on'),function(x){x.classList.remove('on')});
+  btn.classList.add('on');
+  u.onend=u.onerror=function(){btn.classList.remove('on')};
+  speechSynthesis.speak(u);
+}
+var n=0;
+SECTIONS.forEach(function(sec){
+  var h=document.createElement('h2');h.className='sec';h.textContent=sec.name;quiz.appendChild(h);
+  sec.q.forEach(function(d){
+    var idx=n++;
+    var opts=d[3].map(function(o,i){var p=o.split('|');return {nl:p[0],uk:p[1],ok:i===d[4]}});
+    shuffle(opts);
+    var q={n:idx,sec:sec.name,lvl:d[0],nl:d[1],uk:d[2],opts:opts,expl:d[5],ans:-1};
+    all.push(q);
+    var c=document.createElement('div');c.className='card';c.id='q'+idx;
+    var html='<div class="meta">Запитання '+(idx+1)+' / 100<span class="lvl">'+d[0]+'</span></div>';
+    if(d[6]){var t=d[6].split('|');html+='<div class="txt">'+esc(t[0])+'<small>'+esc(t[1])+'</small></div>'}
+    html+='<div class="q">'+esc(d[1])+'</div><div class="uk">'+esc(d[2])+'</div>';
+    opts.forEach(function(o,i){
+      html+='<div class="row"><label class="opt"><input type="radio" name="q'+idx+'" value="'+i+'"><span><span class="l">'+'ABCD'[i]+')</span> '+esc(o.nl)+'</span></label><button type="button" class="spk" aria-label="Прослухати" title="Прослухати">🔊</button></div>';
+    });
+    html+='<button class="clr" type="button">зняти позначку</button><div class="expl" style="display:none"></div>';
+    c.innerHTML=html;quiz.appendChild(c);
+    c.addEventListener('change',function(e){
+      q.ans=+e.target.value;
+      [].forEach.call(c.querySelectorAll('label.opt'),function(l,i){l.classList.toggle('sel',i===q.ans)});
+      upd();
+    });
+    [].forEach.call(c.querySelectorAll('.spk'),function(b,i){
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();speak(opts[i].nl,b)});
+    });
+    c.querySelector('.clr').onclick=function(){
+      q.ans=-1;[].forEach.call(c.querySelectorAll('input'),function(i){i.checked=false});
+      [].forEach.call(c.querySelectorAll('label.opt'),function(l){l.classList.remove('sel')});upd();
+    };
+  });
+});
+function upd(){
+  var a=all.filter(function(q){return q.ans>=0}).length;
+  document.getElementById('cnt').textContent=a+' / '+all.length;
+  document.querySelector('#prog i').style.width=(a/all.length*100)+'%';
+}
+document.getElementById('finish').onclick=function(){
+  var un=all.filter(function(q){return q.ans<0});
+  if(un.length&&!confirm('Без відповіді: '+un.length+'. Завершити тест?'))return;
+  var score=0,wrong=[],bySec={},byLvl={A1:[0,0],A2:[0,0]};
+  all.forEach(function(q){
+    var ok=q.ans>=0&&q.opts[q.ans].ok;
+    if(ok)score++;else wrong.push(q);
+    bySec[q.sec]=bySec[q.sec]||[0,0];bySec[q.sec][1]++;byLvl[q.lvl][1]++;
+    if(ok){bySec[q.sec][0]++;byLvl[q.lvl][0]++}
+    var c=document.getElementById('q'+q.n);
+    [].forEach.call(c.querySelectorAll('label.opt'),function(l,i){
+      l.classList.remove('sel');
+      if(q.opts[i].ok)l.classList.add('right');else if(i===q.ans)l.classList.add('wrong');
+    });
+    [].forEach.call(c.querySelectorAll('input'),function(i){i.disabled=true});
+    c.querySelector('.clr').style.display='none';
+    var ex=c.querySelector('.expl');ex.style.display='block';
+    var right='ABCD'[q.opts.findIndex(function(o){return o.ok})];
+    ex.innerHTML=(ok?'✅ <b>Правильно.</b> ':(q.ans<0?'⚠️ <b>Без відповіді.</b> ':'❌ <b>Неправильно.</b> '))+'Правильна відповідь: <b>'+right+'</b>.<br>'+esc(q.expl);
+    if(!ok)c.classList.add('miss');
+  });
+  var pct=Math.round(score/all.length*100);
+  var lvl=pct<30?'нижче A1 — почніть з основ':pct<50?'A1 (початковий)':pct<65?'A1+ (вище початкового)':pct<80?'A2 (базовий)':'A2+ (впевнений A2)';
+  var tip=[];
+  Object.keys(bySec).forEach(function(k){if(bySec[k][0]/bySec[k][1]<.7)tip.push(k)});
+  var h='<div class="score"><div>Ваш результат</div><div class="big">'+score+' / '+all.length+'</div><div><b>'+pct+'%</b> правильних відповідей</div><div style="margin-top:6px">Орієнтовний рівень: <b>'+lvl+'</b></div>';
+  h+='<table class="tbl"><tr><th>Розділ</th><th>Бали</th></tr>';
+  Object.keys(bySec).forEach(function(k){h+='<tr><td>'+k+'</td><td>'+bySec[k][0]+' / '+bySec[k][1]+'</td></tr>'});
+  h+='<tr><td>Рівень A1</td><td>'+byLvl.A1[0]+' / '+byLvl.A1[1]+'</td></tr><tr><td>Рівень A2</td><td>'+byLvl.A2[0]+' / '+byLvl.A2[1]+'</td></tr></table>';
+  h+='<p style="text-align:left">'+(tip.length?'<b>Що покращити:</b> '+tip.join(', ')+'.':'<b>Чудовий результат!</b> Продовжуйте практику та переходьте до B1.')+'</p>';
+  h+='<p style="text-align:left">Помилок: <b>'+wrong.length+'</b>. Пояснення — під кожним запитанням (червоні рамки — помилки). Список помилок:</p>';
+  if(wrong.length){h+='<ol style="text-align:left;padding-left:20px">'+wrong.map(function(q){return '<li><a href="#q'+q.n+'">Запитання '+(q.n+1)+'</a> — '+esc(q.nl)+'</li>'}).join('')+'</ol>'}
+  h+='</div><button class="main sec2" onclick="location.reload()">Пройти ще раз</button>';
+  var r=document.getElementById('res');r.innerHTML=h;r.style.display='block';
+  document.getElementById('finish').style.display='none';
+  r.scrollIntoView({behavior:'smooth'});
+};
+</script>
+</body>
+</html>

@@ -50,7 +50,7 @@ button.sec2{background:#21468b}
 <body>
 <header><h1 style="text-transform:uppercase;font-size:1.9rem;letter-spacing:1px">🇳🇱 Taras In Nederlans</h1><p>Тест з нідерландської A1–A2 · 100 запитань · Grammatica, Woordenschat, Lezen, Zinsbouw</p></header>
 <div id="vmsg">Нідерландський голос не знайдено на цьому пристрої. Додайте голос nl-NL у налаштуваннях мови пристрою — озвучування може звучати з іншим акцентом.</div>
-<div id="bar"><span id="cnt">0 / 100</span><div id="prog"><i></i></div></div>
+<div id="bar"><span id="cnt">0 / 100</span><div id="prog"><i></i></div><label style="white-space:nowrap">🔊 <select id="rate"><option value="0.5">Повільно (0.5)</option><option value="0.65" selected>Чітко (0.65)</option><option value="1.0">Нормально (1.0)</option></select></label></div>
 <main>
 <div id="quiz"></div>
 <button class="main" id="finish">Завершити тест</button>
@@ -177,6 +177,7 @@ var SECTIONS = [
 var all=[], quiz=document.getElementById('quiz');
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+var rateSel=document.getElementById('rate');try{var sr=localStorage.getItem('rate');if(sr)rateSel.value=sr;rateSel.onchange=function(){localStorage.setItem('rate',rateSel.value)}}catch(e){}
 var voices=[];
 function loadVoices(){if('speechSynthesis' in window)voices=speechSynthesis.getVoices()||[]}
 function dutchVoice(){
@@ -192,7 +193,7 @@ function speak(text,btn){
   document.getElementById('vmsg').style.display=voice?'none':'block';
   speechSynthesis.cancel();
   var u=new SpeechSynthesisUtterance(text);
-  u.lang='nl-NL';u.rate=.9;
+  u.lang='nl-NL';u.rate=parseFloat(document.getElementById('rate').value)||0.65;
   if(voice)u.voice=voice;
   [].forEach.call(document.querySelectorAll('.spk.on'),function(x){x.classList.remove('on')});
   btn.classList.add('on');

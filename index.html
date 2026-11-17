@@ -23,6 +23,11 @@ h2.sec{margin:26px 0 8px;color:#21468b;border-bottom:3px solid var(--c);padding-
 .txt{background:#fff8ec;border-left:4px solid var(--c);padding:8px 10px;margin:6px 0 10px;border-radius:4px}
 .txt small,.uk{color:#5a6577;display:block;font-size:.9em}
 .q{font-weight:600;font-size:1.05rem}
+.row{display:flex;gap:8px;align-items:stretch;margin:7px 0}
+.row label.opt{flex:1;margin:0}
+.spk{flex:none;width:48px;border:2px solid #dde2ee;background:#fff;border-radius:10px;font-size:1.3rem;cursor:pointer}
+.spk:hover,.spk.on{border-color:var(--c);background:#fff4ea}
+#vmsg{display:none;background:#fff3cd;color:#664d03;padding:8px 12px;font-size:.85rem;text-align:center}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:10px;margin:7px 0;border:2px solid #dde2ee;border-radius:10px;cursor:pointer}
 label.opt:hover{border-color:#9fb3e6}
 label.opt input{margin-top:4px;width:20px;height:20px;flex:none;accent-color:var(--c)}
@@ -44,6 +49,7 @@ button.sec2{background:#21468b}
 </head>
 <body>
 <header><h1 style="text-transform:uppercase;font-size:1.9rem;letter-spacing:1px">🇳🇱 Taras In Nederlans</h1><p>Тест з нідерландської A1–A2 · 100 запитань · Grammatica, Woordenschat, Lezen, Zinsbouw</p></header>
+<div id="vmsg">Нідерландський голос не знайдено на цьому пристрої. Додайте голос nl-NL у налаштуваннях мови пристрою — озвучування може звучати з іншим акцентом.</div>
 <div id="bar"><span id="cnt">0 / 100</span><div id="prog"><i></i></div></div>
 <main>
 <div id="quiz"></div>
@@ -91,31 +97,31 @@ var SECTIONS = [
 ["A2","Ik heb geen tijd ___ koffie te drinken.","У мене немає часу пити каву.",["om|щоб","voor|для","aan|до","door|через"],0,"Конструкція «om … te + інфінітив» = щоб/для того, щоб: om koffie te drinken."]
 ]},
 {name:"Woordenschat (словниковий запас)", q:[
-["A1","Wat betekent «Goedemorgen»?","Що означає «Goedemorgen»?",["Доброго ранку|Доброго ранку","Добрий вечір|Добрий вечір","На добраніч|На добраніч","До побачення|До побачення"],0,"Goedemorgen = доброго ранку. Goedemiddag — добрий день, goedenavond — добрий вечір, goedenacht — на добраніч."],
-["A1","Wat betekent «Bedankt»?","Що означає «Bedankt»?",["Будь ласка|Будь ласка","Вибачте|Вибачте","Дякую|Дякую","Привіт|Привіт"],2,"Bedankt = дякую. Alsjeblieft — будь ласка."],
+["A1","Hoe zeg je «Доброго ранку» in het Nederlands?","Як сказати «Доброго ранку» нідерландською?",["Goedemorgen|—","Goedenavond|—","Goedenacht|—","Tot ziens|—"],0,"Goedemorgen = доброго ранку. Goedemiddag — добрий день, goedenavond — добрий вечір, goedenacht — на добраніч."],
+["A1","Hoe zeg je «Дякую» in het Nederlands?","Як сказати «Дякую» нідерландською?",["Alsjeblieft|—","Sorry|—","Bedankt|—","Hallo|—"],2,"Bedankt = дякую. Alsjeblieft — будь ласка."],
 ["A1","Wat is «яблуко» in het Nederlands?","Як по-нідерландськи «яблуко»?",["peer|груша","appel|яблуко","brood|хліб","kaas|сир"],1,"Яблуко — de appel. Peer — груша, brood — хліб, kaas — сир."],
-["A1","Wat betekent «melk»?","Що означає «melk»?",["вода|вода","чай|чай","сік|сік","молоко|молоко"],3,"De melk = молоко. Water — вода, thee — чай, sap — сік."],
-["A1","Welk getal is «zeven»?","Яке число «zeven»?",["5|5","6|6","7|7","8|8"],2,"Zeven = 7. Vijf — 5, zes — 6, acht — 8."],
+["A1","Wat is «молоко» in het Nederlands?","Як по-нідерландськи «молоко»?",["water|—","thee|—","sap|—","melk|—"],3,"De melk = молоко. Water — вода, thee — чай, sap — сік."],
+["A1","Welk woord is het getal 7?","Яке слово означає число 7?",["vijf|—","zes|—","zeven|—","acht|—"],2,"Zeven = 7. Vijf — 5, zes — 6, acht — 8."],
 ["A1","Na maandag komt ___.","Після понеділка йде ___.",["woensdag|середа","dinsdag|вівторок","zondag|неділя","vrijdag|п'ятниця"],1,"Дні тижня: maandag, dinsdag, woensdag, donderdag, vrijdag, zaterdag, zondag."],
 ["A1","Gras is ___.","Трава — ___.",["rood|червона","blauw|синя","geel|жовта","groen|зелена"],3,"Groen = зелений. Rood — червоний, blauw — синій, geel — жовтий."],
 ["A1","De zus van mijn moeder is mijn ___.","Сестра моєї мами — моя ___.",["oom|дядько","tante|тітка","opa|дідусь","neef|двоюрідний брат"],1,"Tante = тітка. Oom — дядько, opa — дідусь, neef — двоюрідний брат/племінник."],
-["A1","Wat betekent «half drie»?","Що означає «half drie»?",["3:30|3:30","2:30|2:30","3:00|3:00","2:00|2:00"],1,"У нідерландській «half drie» = пів на третю, тобто 2:30 (а не 3:30)."],
+["A1","Hoe zeg je 2:30 in het Nederlands?","Як по-нідерландськи сказати 2:30?",["half vier|—","half drie|—","drie uur|—","twee uur|—"],1,"У нідерландській «half drie» = пів на третю, тобто 2:30 (а не 3:30)."],
 ["A1","Het tegenovergestelde van «groot» is ___.","Протилежне до «groot» — ___.",["lang|довгий","klein|малий","oud|старий","duur|дорогий"],1,"Groot ↔ klein (великий ↔ малий)."],
 ["A1","Waar koop je brood? Bij de ___.","Де купують хліб? У ___.",["slager|м'ясник","apotheker|аптекар","bakker|пекар","kapper|перукар"],2,"Brood koop je bij de bakker. Slager — м'ясник, apotheker — аптекар, kapper — перукар."],
 ["A1","Het regent. Je neemt een ___ mee.","Іде дощ. Ти береш ___.",["zonnebril|сонячні окуляри","zwembroek|плавки","paraplu|парасольку","ventilator|вентилятор"],2,"Paraplu = парасолька. Zonnebril — сонцезахисні окуляри."],
-["A1","Wat betekent «ontbijt»?","Що означає «ontbijt»?",["обід|обід","сніданок|сніданок","вечеря|вечеря","перекус|перекус"],1,"Het ontbijt = сніданок, de lunch = обід, het avondeten = вечеря."],
-["A2","Wat betekent «vergeten»?","Що означає «vergeten»?",["згадати|згадати","забути|забути","знайти|знайти","втратити|втратити"],1,"Vergeten = забувати/забути: Ik ben mijn sleutels vergeten."],
-["A2","Wat betekent «gezellig»?","Що означає «gezellig»?",["затишний, приємний|затишний, приємний","дорогий|дорогий","гучний|гучний","небезпечний|небезпечний"],0,"Gezellig — улюблене слово голландців: затишно, привітно, приємна атмосфера."],
+["A1","Wat is «сніданок» in het Nederlands?","Як по-нідерландськи «сніданок»?",["de lunch|—","het ontbijt|—","het avondeten|—","het tussendoortje|—"],1,"Het ontbijt = сніданок, de lunch = обід, het avondeten = вечеря."],
+["A2","Welk werkwoord betekent «забути»?","Яке дієслово означає «забути»?",["onthouden|—","vergeten|—","vinden|—","verliezen|—"],1,"Vergeten = забувати/забути: Ik ben mijn sleutels vergeten."],
+["A2","Welk woord betekent «затишний, приємний»?","Яке слово означає «затишний, приємний»?",["gezellig|—","duur|—","luid|—","gevaarlijk|—"],0,"Gezellig — улюблене слово голландців: затишно, привітно, приємна атмосфера."],
 ["A2","Ik heb honger. Ik wil iets ___.","Я голодний. Я хочу щось ___.",["drinken|пити","slapen|спати","lezen|читати","eten|їсти"],3,"Honger hebben = бути голодним, тому хочемо eten (їсти). Dorst — спрага."],
 ["A2","Ik heb hoofdpijn. Ik ga naar de ___.","У мене болить голова. Я іду до ___.",["bakker|пекаря","huisarts|сімейного лікаря","bank|банку","bioscoop|кінотеатру"],1,"De huisarts = сімейний лікар. У Нідерландах це перший крок при проблемах зі здоров'ям."],
-["A2","Wat betekent «de afspraak»?","Що означає «de afspraak»?",["подарунок|подарунок","квиток|квиток","домовленість, запис на зустріч|домовленість, запис на зустріч","відпустка|відпустка"],2,"De afspraak = домовленість, запис (до лікаря) або зустріч: Ik heb een afspraak om 10 uur."],
+["A2","Welk woord betekent «домовленість, запис на зустріч»?","Яке слово означає «домовленість, запис на зустріч»?",["het cadeau|—","het kaartje|—","de afspraak|—","de vakantie|—"],2,"De afspraak = домовленість, запис (до лікаря) або зустріч: Ik heb een afspraak om 10 uur."],
 ["A2","Wie helpt zieke mensen in het ziekenhuis?","Хто допомагає хворим у лікарні?",["de bakker|пекар","de verpleegkundige|медсестра/медбрат","de kapper|перукар","de timmerman|тесля"],1,"De verpleegkundige = медична сестра/брат."],
 ["A2","Op het station wacht je op de ___.","На вокзалі ти чекаєш на ___.",["trein|потяг","vliegtuig|літак","schip|корабель","auto|авто"],0,"Station = вокзал, де чекають на trein (потяг)."],
 ["A2","Het tegenovergestelde van «goedkoop» is ___.","Протилежне до «goedkoop» — ___.",["mooi|гарний","duur|дорогий","oud|старий","snel|швидкий"],1,"Goedkoop (дешевий) ↔ duur (дорогий)."],
-["A2","Wat betekent «de verjaardag»?","Що означає «de verjaardag»?",["день народження|день народження","весілля|весілля","відпустка|відпустка","свято|свято"],0,"De verjaardag = день народження. Gefeliciteerd! = Вітаю!"],
-["A2","Wat betekent «de buren»?","Що означає «de buren»?",["колеги|колеги","родичі|родичі","сусіди|сусіди","друзі|друзі"],2,"De buren = сусіди; de buurman/buurvrouw — сусід/сусідка."],
-["A2","Wat betekent «Ik heb dorst»?","Що означає «Ik heb dorst»?",["Хочу їсти|Хочу їсти","Хочу пити|Хочу пити","Хочу спати|Хочу спати","Мені холодно|Мені холодно"],1,"Dorst = спрага. Ik heb dorst = мені хочеться пити."],
-["A2","Wat betekent «volgende week»?","Що означає «volgende week»?",["минулого тижня|минулого тижня","цього тижня|цього тижня","наступного тижня|наступного тижня","щодня|щодня"],2,"Volgende = наступний, vorige = минулий: volgende week, vorige week."]
+["A2","Welk woord betekent «день народження»?","Яке слово означає «день народження»?",["de verjaardag|—","de bruiloft|—","de vakantie|—","het feest|—"],0,"De verjaardag = день народження. Gefeliciteerd! = Вітаю!"],
+["A2","Welk woord betekent «сусіди»?","Яке слово означає «сусіди»?",["de collega's|—","de familie|—","de buren|—","de vrienden|—"],2,"De buren = сусіди; de buurman/buurvrouw — сусід/сусідка."],
+["A2","Hoe zeg je «Хочу пити» in het Nederlands?","Як по-нідерландськи сказати «Хочу пити»?",["Ik heb honger.|—","Ik heb dorst.|—","Ik ben moe.|—","Ik heb het koud.|—"],1,"Dorst = спрага. Ik heb dorst = мені хочеться пити."],
+["A2","Hoe zeg je «наступного тижня» in het Nederlands?","Як по-нідерландськи сказати «наступного тижня»?",["vorige week|—","deze week|—","volgende week|—","elke dag|—"],2,"Volgende = наступний, vorige = минулий: volgende week, vorige week."]
 ]},
 {name:"Lezen (розуміння тексту)", q:[
 ["A1","Hoe oud is Anna?","Скільки років Анні?",["25|25","52|52","15|15","35|35"],0,"У тексті: «Ik ben 25 jaar oud».",T1],
@@ -171,6 +177,28 @@ var SECTIONS = [
 var all=[], quiz=document.getElementById('quiz');
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+var voices=[];
+function loadVoices(){if('speechSynthesis' in window)voices=speechSynthesis.getVoices()||[]}
+function dutchVoice(){
+  var v=voices.filter(function(x){return /^nl[-_]NL$/i.test(x.lang)});
+  if(!v.length)v=voices.filter(function(x){return /^nl/i.test(x.lang)});
+  return v[0]||null;
+}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function speak(text,btn){
+  if(!('speechSynthesis' in window)){alert('Ваш браузер не підтримує озвучування.');return}
+  loadVoices();
+  var voice=dutchVoice();
+  document.getElementById('vmsg').style.display=voice?'none':'block';
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang='nl-NL';u.rate=.9;
+  if(voice)u.voice=voice;
+  [].forEach.call(document.querySelectorAll('.spk.on'),function(x){x.classList.remove('on')});
+  btn.classList.add('on');
+  u.onend=u.onerror=function(){btn.classList.remove('on')};
+  speechSynthesis.speak(u);
+}
 var n=0;
 SECTIONS.forEach(function(sec){
   var h=document.createElement('h2');h.className='sec';h.textContent=sec.name;quiz.appendChild(h);
@@ -185,7 +213,7 @@ SECTIONS.forEach(function(sec){
     if(d[6]){var t=d[6].split('|');html+='<div class="txt">'+esc(t[0])+'<small>'+esc(t[1])+'</small></div>'}
     html+='<div class="q">'+esc(d[1])+'</div><div class="uk">'+esc(d[2])+'</div>';
     opts.forEach(function(o,i){
-      html+='<label class="opt"><input type="radio" name="q'+idx+'" value="'+i+'"><span><span class="l">'+'ABCD'[i]+')</span> '+esc(o.nl)+'<span class="uk">'+esc(o.uk)+'</span></span></label>';
+      html+='<div class="row"><label class="opt"><input type="radio" name="q'+idx+'" value="'+i+'"><span><span class="l">'+'ABCD'[i]+')</span> '+esc(o.nl)+'</span></label><button type="button" class="spk" aria-label="Прослухати" title="Прослухати">🔊</button></div>';
     });
     html+='<button class="clr" type="button">зняти позначку</button><div class="expl" style="display:none"></div>';
     c.innerHTML=html;quiz.appendChild(c);
@@ -193,6 +221,9 @@ SECTIONS.forEach(function(sec){
       q.ans=+e.target.value;
       [].forEach.call(c.querySelectorAll('label.opt'),function(l,i){l.classList.toggle('sel',i===q.ans)});
       upd();
+    });
+    [].forEach.call(c.querySelectorAll('.spk'),function(b,i){
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();speak(opts[i].nl,b)});
     });
     c.querySelector('.clr').onclick=function(){
       q.ans=-1;[].forEach.call(c.querySelectorAll('input'),function(i){i.checked=false});
